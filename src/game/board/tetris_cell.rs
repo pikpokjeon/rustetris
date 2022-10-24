@@ -62,13 +62,13 @@ impl TetrisCell {
     pub fn to_color(&self) -> &str {
         match self {
             Self::Empty => "white",
-            Self::Red => "red",
-            Self::Green => "green",
-            Self::Blue => "blue",
-            Self::Purple => "purple",
-            Self::Cyan => "cyan",
-            Self::Orange => "orange",
-            Self::Yellow => "yellow",
+            Self::Red => "#f44336",
+            Self::Green => "#4caf50",
+            Self::Blue => "#2196f3",
+            Self::Purple => "#673ab7",
+            Self::Cyan => "#00bcd4",
+            Self::Orange => "#ff9800",
+            Self::Yellow => "#ffeb3b",
             Self::Ghost => "#d3d3d3",
             _ => "white",
         }
