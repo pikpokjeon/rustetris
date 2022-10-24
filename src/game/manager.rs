@@ -1,23 +1,19 @@
+use futures_util::stream::StreamExt;
+use gloo_timers::future::IntervalStream;
 use std::cell::RefCell;
-use std::collections::VecDeque;
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
-use futures_util::stream::StreamExt;
-use gloo_timers::future::IntervalStream;
 use wasm_bindgen::prelude::Closure;
 use wasm_bindgen_futures::spawn_local;
 
 use crate::constants::character::SPECIAL_SPACE;
+use crate::constants::time::TICK_LOOP_INTERVAL;
 use crate::game::game_info::GameInfo;
-use crate::game::tetris_board::TetrisBoard;
-use crate::game::tetris_cell::TetrisCell;
 use crate::js_bind::request_animation_frame::request_animation_frame;
 use crate::js_bind::write_text::write_text;
 use crate::options::game_option::GameOption;
 use crate::wasm_bind;
-
-use super::SpinType;
 
 pub struct GameManager {
     pub game_info: Arc<Mutex<GameInfo>>,
@@ -66,28 +62,48 @@ impl GameManager {
             return None;
         }
 
-        self.init_game()?;
         self.game_info.lock().ok()?.on_play = true;
         self.game_info.lock().ok()?.lose = false;
 
         log::info!("GAME START");
 
-        // 틱 스레드
+        // tick - 중력 스레드
         let game_info = Arc::clone(&self.game_info);
+        let mut former_lock_delay_count:u8 = 0;
         spawn_local(async move {
+            // 시작 기준점
+            let mut start_point = instant::Instant::now();
+
             let game_info = game_info;
             let _game_info = Arc::clone(&game_info);
 
-            let tick_interval = game_info.lock().ok().unwrap().tick_interval;
-
-            let mut future_list = IntervalStream::new(tick_interval as u32).map(move |_| {
+            // 기본 100밀리초 단위마다 반복해서 타임 체크 (더 세밀한 제어가 필요하다면 문제없는 선에서 낮춰도 무방)
+            let mut future_list = IntervalStream::new(TICK_LOOP_INTERVAL).map(move |_| {
                 let mut game_info = game_info.lock().unwrap();
+                if former_lock_delay_count != game_info.lock_delay_count{
+                    if game_info.lock_delay_count<8 {
+                        start_point = instant::Instant::now();
+                    }
+                    former_lock_delay_count = game_info.lock_delay_count;
+                }
+                game_info.running_time += TICK_LOOP_INTERVAL as u128;
 
-                game_info.tick();
+                let duration = start_point.elapsed();
+
+                // tick이 발생하지 않은 시점에서 경과된 시간.
+                let elapsed_time = duration.as_millis();
+
+                // 여기서 딜레이 커스텀하면 될듯
+                let delay = game_info.tick_interval as u128 + (game_info.lock_delay as u128);
+
+                // 지정된 딜레이만큼 지났다면 다시 초기화하고 tick 한칸 수행
+                if elapsed_time >= delay {
+                    start_point = instant::Instant::now();
+                    game_info.tick();
+                }
             });
 
             let game_info = _game_info;
-
             loop {
                 if game_info.lock().unwrap().on_play {
                     let next = future_list.next();
@@ -186,64 +202,22 @@ impl GameManager {
         Some(())
     }
 
-    // 게임 초기화
-    pub fn init_game(&self) -> Option<()> {
-        self.init_bag()?;
-        self.init_board()?;
-        self.init_score()?;
-        self.init_context()?;
 
+    pub fn init_running_time(&self) -> Option<()> {
+        let mut game_info = self.game_info.lock().ok().unwrap();
+        game_info.running_time = 0;
         Some(())
     }
+
 
     // 보드 초기화
-    pub fn init_board(&self) -> Option<()> {
-        let mut game_info = self.game_info.lock().ok().unwrap();
-        let column_count = game_info.tetris_board.column_count;
-        let row_count = game_info.tetris_board.row_count;
-
-        game_info.tetris_board = TetrisBoard {
-            cells: vec![vec![TetrisCell::Empty; column_count as usize]; row_count as usize],
-            row_count,
-            column_count,
-            board_height: game_info.tetris_board.board_height,
-            board_width: game_info.tetris_board.board_width,
-            hidden_row_count: game_info.tetris_board.hidden_row_count,
-        };
-
-        Some(())
-    }
 
     // 컨텍스트 초기화
-    pub fn init_context(&self) -> Option<()> {
-        let mut game_info = self.game_info.lock().ok().unwrap();
 
-        game_info.back2back = None;
-        game_info.combo = None;
-        game_info.in_spin = SpinType::None;
-        game_info.message = None;
-
-        Some(())
-    }
 
     // 가방 초기화
-    pub fn init_bag(&self) -> Option<()> {
-        let mut game_info = self.game_info.lock().ok().unwrap();
 
-        game_info.bag = VecDeque::new();
-        game_info.current_mino = None;
-        game_info.hold_used = false;
-        game_info.hold = None;
-
-        Some(())
-    }
 
     // 점수 초기화
-    pub fn init_score(&self) -> Option<()> {
-        let mut game_info = self.game_info.lock().ok().unwrap();
 
-        game_info.record = Default::default();
-
-        Some(())
-    }
 }
