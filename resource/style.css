@@ -22,3 +22,27 @@ body{
     50%{background-position:59% 100%}
     100%{background-position:42% 0%}
 }
+
+main{
+  
+
+}
+.text-base{
+    color: white !important;
+}
+#gamebox{
+    border: 1px solid rgba(255, 255, 255, 0.358);
+    background: rgba(255, 255, 255, 0.043);
+    width: 35vw;
+    padding:15px 30px;
+}
+#next-canvas{
+    background: none;
+}
+.text-2xl{
+    color:white
+}
+
+dl{
+    color: white !important;
+}
