@@ -63,10 +63,10 @@ impl TetrisCell {
         match self {
             Self::Empty => "white",
             Self::Red => "#f44336",
-            Self::Green => "#4caf50",
-            Self::Blue => "#2196f3",
+            Self::Green => "#53c858",
+            Self::Blue => "#2157f3",
             Self::Purple => "#673ab7",
-            Self::Cyan => "#00bcd4",
+            Self::Cyan => "#32f6de",
             Self::Orange => "#ff9800",
             Self::Yellow => "#ffeb3b",
             Self::Ghost => "#697994",

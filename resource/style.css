@@ -36,13 +36,21 @@ main{
     width: 35vw;
     padding:15px 30px;
 }
-#next-canvas{
-    background: none;
-}
+
 .text-2xl{
     color:white
 }
 
 dl{
     color: white !important;
+}
+#game-canvas{
+    background: #0f172a73;
+    border:1px solid #0d1528;
+
+}
+.side-canvas{
+    border:1px solid #0d1528;
+    display: block;
+    background: #0f172a73;
 }

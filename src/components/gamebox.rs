@@ -64,7 +64,7 @@ pub fn game_box() -> Html {
             GameManager::empty_render();
         })}>
             <div class="flex flex-col m-5 justify-between">
-                <div class="mb-[150px]">
+                <div class="mb-[150px] side-canvas">
                     <p class="font-mono text-2xl text-center">{"Hold"}</p>
                     <canvas id="hold-canvas" class="" width="120" height="120"></canvas>
                 </div>
@@ -97,7 +97,7 @@ pub fn game_box() -> Html {
                 <canvas id="game-canvas" width="300" height="600"></canvas>
             </div>
 
-            <div class="m-5">
+            <div class="m-5  side-canvas">
                 <p class="font-mono text-2xl text-center">{"Next"}</p>
                 <canvas id="next-canvas" class="" width="120" height="520"></canvas>
             </div>
