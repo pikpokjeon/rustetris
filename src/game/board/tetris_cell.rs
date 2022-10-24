@@ -4,7 +4,7 @@ use wasm_bindgen::prelude::*;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TetrisCell {
     Empty = "white",
-    Ghost = "#d3d3d3",
+    Ghost = "#697994",
     Red = "red",
     Green = "green",
     Blue = "blue",
@@ -69,7 +69,7 @@ impl TetrisCell {
             Self::Cyan => "#00bcd4",
             Self::Orange => "#ff9800",
             Self::Yellow => "#ffeb3b",
-            Self::Ghost => "#d3d3d3",
+            Self::Ghost => "#697994",
             _ => "white",
         }
     }
